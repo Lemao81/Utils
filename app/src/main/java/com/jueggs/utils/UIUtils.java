@@ -13,6 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.List;
 
@@ -49,8 +52,7 @@ public class UIUtils
         if (!TextUtils.isEmpty(text))
             editText.setText(text);
 
-        builder.setTitle(titleRes);
-        builder.setView(view);
+        builder.setTitle(titleRes).setView(view);
         builder.setPositiveButton(posCaptionRes, new DialogInterface.OnClickListener()
         {
             @Override
@@ -64,6 +66,33 @@ public class UIUtils
 
         Dialog dialog = builder.create();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        dialog.show();
+    }
+
+    public static void showSelectionListDialog(Context context, ViewGroup root, int titleRes, int negCaptionRes,
+                                               List<String> items, final ProcessInput processor)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = LayoutInflater.from(context).inflate(R.layout.selection_list, root, false);
+
+        final Dialog dialog = builder.setTitle(titleRes)
+                .setView(view)
+                .setNegativeButton(negCaptionRes, null)
+                .create();
+
+        ListView list = (ListView) view.findViewById(R.id.list);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, items);
+        list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+            {
+                dialog.dismiss();
+                processor.process(adapter.getItem(position));
+            }
+        });
+
         dialog.show();
     }
 
